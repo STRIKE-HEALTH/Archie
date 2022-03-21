@@ -1,0 +1,60 @@
+{
+  "Collector": {
+    "From": {
+      "Name": "iSite",
+      "Authentication": {
+        "EndPoint": "172.17.234.215",
+        "UserName": "iadmin",
+        "Password": "hellothere"
+      },
+      "iSite": {
+        "ImageSuiteUrlFormat": "http://172.17.234.215/iSiteWeb/WorkList/PrimaryWorkList.ashx",
+        "ImageSuiteDSN": "iSite",
+        "iSyntaxServerIP": "172.17.234.215",
+        "iSyntaxServerPort": "6464",
+        "iSiteOptions": "StentorBackEnd,DisableISSA",
+        "Query": {
+          "QueryString": "IDXExamStatus IN(\"P\",\"F\",\"A\",\"R\") AND StudyDTTM BETWEEN \"START_DATE\" AND \"END_DATE\"",
+          "QueryInterval": 1,
+          "MaxResults": 1000,
+          "StartDt": "3/6/2011",
+          "EndDt": "4/8/2011"
+
+        }
+
+      },
+
+
+      "Args": {
+        "": ""
+      }
+    },
+    "Store": {
+      "Path": "C:\\test"
+    }
+
+  },
+
+
+  "Serilog": {
+    "Using": [ "Serilog.Sinks.Console", "Serilog.Sinks.File" ],
+    "MinimumLevel": "Debug",
+    "WriteTo": [
+     
+      {
+        "Name": "File",
+        "Args": { "path": "Logs/log.txt" }
+      },
+
+
+
+
+
+    ],
+    "Enrich": [ "FromLogContext", "WithMachineName", "WithThreadId" ],
+    "Properties": {
+      "Application": "Archie"
+    }
+  }
+
+}
