@@ -8,11 +8,37 @@ using System.Threading.Tasks;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 
-namespace Archie
+namespace Archie.Query
 {
-   
 
+    public partial class GetReportOutput
+    {
+        [JsonProperty("AllReports")]
+        public AllReports AllReports { get; set; }
+    }
+
+    public partial class AllReports
+    {
+        [JsonProperty("Report")]
+        [JsonConverter(typeof(SingleOrArrayConverter<Report>))]
+        public List<Report> Reports { get; set; }
+    }
+    public class Report
+    {
+        [JsonProperty("#cdata-section")]
+        public string Text { get; set; }
+        [JsonProperty("@Status")]
+        public string Status { get; set; }
+        [JsonProperty("@Current")]
+        public string Current { get; set; }
+        [JsonProperty("@DTTM")]
+        public DateTime ReportDt { get; set; }
+
+        [JsonProperty("@PrincipalInterpreter")]
+        public string PrincipalInterpreter { get; set; }
+    }
     public partial class QueryOutput
     {
         [JsonProperty("QueryResult")]
@@ -36,7 +62,8 @@ namespace Archie
     public partial class ExamList
     {
         [JsonProperty("Exam")]
-        public Exam[] Exams { get; set; }
+        [JsonConverter(typeof(SingleOrArrayConverter<Exam>))]
+        public List<Exam> Exams { get; set; }
     }
 
     public partial class Exam
@@ -143,12 +170,13 @@ namespace Archie
 
     public partial class QueryOutput
     {
-        public static QueryOutput FromJson(string json) => JsonConvert.DeserializeObject<QueryOutput>(json, Archie.Converter.Settings);
+        public static QueryOutput FromJson(string json) => JsonConvert.DeserializeObject<QueryOutput>(json, Archie.Query.Converter.Settings);
     }
 
     public static class Serialize
     {
-        public static string ToJson(this QueryOutput self) => JsonConvert.SerializeObject(self, Archie.Converter.Settings);
+        public static string ToJson(this QueryOutput self) => JsonConvert.SerializeObject(self, Archie.Query.Converter.Settings);
+        public static string ToQJson(this GetReportOutput self) => JsonConvert.SerializeObject(self, Archie.Query.Converter.Settings);
     }
 
     internal static class Converter
@@ -193,4 +221,40 @@ namespace Archie
 
         public static readonly ParseStringConverter Singleton = new ParseStringConverter();
     }
+
+
+
+    public class SingleOrArrayConverter<T> : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return (objectType == typeof(List<T>));
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            JToken token = JToken.Load(reader);
+            if (token.Type == JTokenType.Array)
+            {
+                return token.ToObject<List<T>>();
+            }
+            return new List<T> { token.ToObject<T>() };
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            List<T> list = (List<T>)value;
+            if (list.Count == 1)
+            {
+                value = list[0];
+            }
+            serializer.Serialize(writer, value);
+        }
+
+        public override bool CanWrite
+        {
+            get { return true; }
+        }
+    }
+
 }
