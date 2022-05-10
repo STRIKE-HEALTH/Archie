@@ -3,9 +3,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,6 +35,7 @@ namespace Archie
             //var logger = logFactory.CreateLogger<Program>();
 
 
+           
             var host = AppStartup();
             var serviceProvider = host.Services;
 
@@ -39,20 +43,27 @@ namespace Archie
             var configuration = Globals.Configuration;
             var startDt = configuration["Collector:From:iSite:Query:StartDt"];
             var endDt = configuration["Collector:From:iSite:Query:EndDt"];
+            var accessionList = configuration["Collector:From:iSite:Query:AccessionList"];
 
             String queryWithDateVariables = configuration["Collector:From:iSite:Query:QueryString"];
             int maxQueryResults = configuration.GetValue<int>("Collector:From:iSite:Query:MaxQueryResults");
 
             int inervalQuery = configuration.GetValue<int>("Collector:From:iSite:Query:QueryInterval");
 
+            if (!string.IsNullOrEmpty(accessionList))
+            {
+                var list = accessionList.Split(';');
+                Queue<string> _accQueue = new Queue<string>(list);
 
-
-            collector.CollectData(DateTime.Parse(startDt),DateTime.Parse(endDt));
+                collector.CollectData(_accQueue);
+            }
+            else
+                collector.CollectData(DateTime.Parse(startDt), DateTime.Parse(endDt));
 
             //collector.CollectData(new DateTime(2011,11,3),new DateTime(2011,11,4));
 
             // collector.Initialize();
-            //await host.RunAsync();
+            await host.RunAsync();
 
         }
 
