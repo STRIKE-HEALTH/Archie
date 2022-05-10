@@ -233,9 +233,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseReportCollector.cs" />
     <Compile Include="Collector.cs" />
     <Compile Include="DateTimeParser.cs" />
     <Compile Include="DynamicXml.cs" />
+    <Compile Include="iSiteReportCollector.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryResults.cs" />
